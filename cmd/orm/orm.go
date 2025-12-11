@@ -276,6 +276,18 @@ func (o *Orm) model(tables ...string) error {
 		}
 		opts = append(opts, tableopt...)
 
+		// Remove gorm comment tags
+		columns, err := o.opt.db.Migrator().ColumnTypes(vals[0])
+		if err != nil {
+			return err
+		}
+		// Remove gorm comment tags from all columns
+		for _, col := range columns {
+			opts = append(opts, gen.FieldGORMTag(col.Name(), func(tag field.GormTag) field.GormTag {
+				return tag.Remove(field.TagKeyGormComment)
+			}))
+		}
+
 		// Apply data type mapping for the table
 		o.genoptByTable(vals[0])
 
@@ -321,12 +333,13 @@ func (o *Orm) formatGlobal() error {
 		// Global reGromTag
 		if parts[0] == "*" {
 			o.global = append(o.global, gen.FieldGORMTag(parts[1], func(tag field.GormTag) field.GormTag {
-				return tag.Set("column", parts[2])
+				return tag.Set(field.TagKeyGormColumn, parts[2])
 			}))
 			continue
 		}
 		regormtags[parts[0]] = append(retags[parts[0]], [2]string{parts[1], parts[2]})
 	}
+	o.regormtag = regormtags
 
 	// Process ignore options
 	for _, ignore := range o.opt.ignore {
@@ -394,7 +407,7 @@ func (o *Orm) optByTable(table string) ([]gen.ModelOpt, error) {
 	if rgt, ok := o.regormtag[table]; ok {
 		for _, r := range rgt {
 			opts = append(opts, gen.FieldGORMTag(r[0], func(tag field.GormTag) field.GormTag {
-				return tag.Set("column", r[1])
+				return tag.Set(field.TagKeyGormColumn, r[1])
 			}))
 		}
 	}
