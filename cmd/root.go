@@ -55,5 +55,8 @@ func Execute(cmd ...ICommand) {
 }
 
 func init() {
-	rootCmd.AddGroup(&cobra.Group{ID: "db", Title: "database commands"})
+	rootCmd.AddGroup(
+		&cobra.Group{ID: "db", Title: "database commands"},
+		&cobra.Group{ID: "encrypt", Title: "Encryption commands"},
+	)
 }

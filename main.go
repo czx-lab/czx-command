@@ -18,6 +18,7 @@ package main
 import (
 	"command/annotae"
 	"command/cmd"
+	"command/cmd/encrypt"
 	"command/cmd/orm"
 
 	"gorm.io/driver/mysql"
@@ -64,6 +65,7 @@ func main() {
 				"*": func(annotae.Querier) {},
 			}),
 		),
+		encrypt.NewRSA(),
 	}
 	cmd.Execute(cmds...)
 }
